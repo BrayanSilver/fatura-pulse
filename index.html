@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard de Faturamento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand-text">
+                    <h1 class="main-title">Dashboard de Faturamento</h1>
+                    <div class="subtitle">
+                        <span class="month-pill">Meta 1 · <span id="currentMonth">JANEIRO</span></span>
+                        <span id="lastUpdate" class="last-update">última atualização: carregando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    Online
+                </div>
+                <div class="header-timer" title="Próxima atualização">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+                    <span id="timerValue" class="timer-value-header">15s</span>
+                </div>
+                <button id="rotateToggle" class="control-btn" title="Alternar telas automaticamente">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/></svg>
+                </button>
+                <button id="soundToggle" class="control-btn" title="Ativar/Desativar Som">
+                    <span id="soundIcon">🔊</span>
+                    <svg class="icon-sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+                    <svg class="icon-sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 5M22 9l-5 5"/></svg>
+                </button>
+                <button id="adminBtn" class="control-btn" title="Painel Administrativo">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="view-group">
+            <nav class="view-switch" aria-label="Telas">
+                <button class="view-btn active" data-view="indicadores">Indicadores</button>
+                <button class="view-btn" data-view="notas">Notas</button>
+                <button class="view-btn" data-view="clientes">Clientes</button>
+                <button class="view-btn" data-view="canais">Canais</button>
+                <button class="view-btn" data-view="faturamento">Faturamento</button>
+                <span class="rotate-progress"><span id="rotateProgressBar"></span></span>
+            </nav>
+            <button id="pauseToggle" class="pause-btn" title="Pausar (congela a tela e a alternância)" aria-pressed="false">
+                <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="3.5" height="14" rx="1"/><rect x="14" y="5" width="3.5" height="14" rx="1"/></svg>
+                <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+            </button>
+        </div>
+
+        <section class="filters-bar" id="filtersBar" aria-label="Filtros do dashboard">
+            <span class="mock-chip" title="Notas fictícias gravadas neste navegador">Demonstração</span>
+            <label class="filter-field">
+                <span>Mês</span>
+                <select id="filterMonth"></select>
+            </label>
+            <label class="filter-field">
+                <span>Regional</span>
+                <select id="filterRegional"></select>
+            </label>
+            <label class="filter-field">
+                <span>Estado</span>
+                <select id="filterUf"></select>
+            </label>
+            <label class="filter-field">
+                <span>Representante</span>
+                <select id="filterRep"></select>
+            </label>
+            <label class="filter-field">
+                <span>Canal</span>
+                <select id="filterChannel"></select>
+            </label>
+            <button type="button" id="clearFilters" class="filter-clear">Limpar</button>
+            <p id="filterSummary" class="filter-summary" aria-live="polite"></p>
+        </section>
+
+        <!-- Main Content -->
+        <main id="viewGeral" class="main-content view hidden">
+            <!-- Últimos Pedidos -->
+            <section class="card orders-card">
+                <div class="card-head">
+                    <h3 class="card-title">Últimas notas</h3>
+                    <div class="card-head-side">
+                        <span id="pedidosCount" class="pedidos-count"></span>
+                        <span class="live-tag"><span class="live-dot"></span>ao vivo</span>
+                    </div>
+                </div>
+                <div id="pedidosList" class="pedidos-list">
+                    <div class="pedido-item loading">
+                        <div class="pedido-info">
+                            <span class="pedido-cliente">Carregando notas...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resultado Geral -->
+            <section class="card hero-card">
+                <div class="card-head">
+                    <h3 class="card-title">Faturamento do mês</h3>
+                    <div class="ring-legend">
+                        <span><i class="legend-dot main"></i>Meta 1</span>
+                        <span><i class="legend-dot violet"></i>Meta 2 <b id="meta2PctInline">0%</b></span>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="salesChart"></canvas>
+                    <div class="chart-center-text">
+                        <span class="center-label">Faturado no mês</span>
+                        <div id="percentageValue" class="chart-percentage">0%</div>
+                        <div id="chartCurrentValue" class="chart-current-value">R$ 0,00</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Televendas -->
+            <section class="card televendas-card">
+                <div class="card-head">
+                    <h3 id="featuredChannelTitle" class="card-title">Canal</h3>
+                </div>
+                <div class="televendas-wrapper">
+                    <canvas id="televendasChart"></canvas>
+                    <div class="televendas-center">
+                        <div id="televendasPct" class="televendas-pct">0%</div>
+                        <span class="center-label">da Meta 1</span>
+                    </div>
+                </div>
+                <div class="televendas-stats">
+                    <div id="televendasValue" class="televendas-value">R$ 0,00</div>
+                    <div class="televendas-diff-row">
+                        <span id="televendasDiffLabel" class="center-label">Faltam para a Meta 1</span>
+                        <span id="televendasDifference" class="televendas-difference">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="televendas-metas">
+                    <div class="televendas-meta-card">
+                        <span class="televendas-meta-label"><i class="legend-dot green"></i>Meta 1</span>
+                        <div id="televendasMeta1Value" class="televendas-meta-value green">R$ 3.000.000,00</div>
+                    </div>
+                    <div class="televendas-meta-card">
+                        <span class="televendas-meta-label"><i class="legend-dot violet"></i>Meta 2</span>
+                        <div id="televendasMeta2Value" class="televendas-meta-value purple">R$ 4.000.000,00</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cards -->
+            <aside class="info-cards">
+                <div class="info-card accent-green">
+                    <div class="card-label">Meta 1</div>
+                    <div id="goalValue" class="card-value green">R$ 19.000.000,00</div>
+                </div>
+                <div class="info-card accent-violet">
+                    <div class="card-label">Meta 2</div>
+                    <div id="meta2GoalValue" class="card-value purple">R$ 21.000.000,00</div>
+                </div>
+                <div class="info-card accent-white">
+                    <div class="card-label">Faturado</div>
+                    <div id="currentValue" class="card-value white">R$ 0,00</div>
+                </div>
+                <div class="info-card accent-rose">
+                    <div class="card-label">Diferença da Meta 1</div>
+                    <div id="differenceValue" class="card-value">R$ 0,00</div>
+                </div>
+                <div class="info-card status-card">
+                    <div class="status-indicator">
+                        <div class="status-dot-large"></div>
+                        <span id="statusText">0.0% da Meta</span>
+                    </div>
+                </div>
+                <div class="info-card status-card">
+                    <div class="status-indicator">
+                        <div id="meta2StatusDot" class="status-dot-large"></div>
+                        <span id="meta2StatusText">Carregando...</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Indicadores detalhados -->
+        <div id="viewIndicadores" class="insights-view view">
+            <div class="kpi-strip">
+                <div class="kpi-card">
+                    <div id="kpiTodayLabel" class="kpi-label">Faturado hoje</div>
+                    <div id="kpiToday" class="kpi-value">--</div>
+                    <div id="kpiTodaySub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Notas no mês</div>
+                    <div id="kpiOrders" class="kpi-value">--</div>
+                    <div id="kpiOrdersSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes faturados</div>
+                    <div id="kpiClients" class="kpi-value">--</div>
+                    <div id="kpiClientsSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Devoluções no Mês</div>
+                    <div id="kpiReturns" class="kpi-value red">--</div>
+                    <div id="kpiReturnsSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Margem de Contribuição</div>
+                    <div id="kpiMargin" class="kpi-value">--</div>
+                    <div id="kpiMarginSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Projeção de Fechamento</div>
+                    <div id="kpiProjection" class="kpi-value">--</div>
+                    <div id="kpiProjectionSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card highlight">
+                    <div class="kpi-label">Ritmo Necessário (Meta 1)</div>
+                    <div id="kpiRequired" class="kpi-value">--</div>
+                    <div id="kpiRequiredSub" class="kpi-sub">&nbsp;</div>
+                </div>
+            </div>
+
+            <div class="insights-grid">
+                <div class="insights-panel">
+                    <div class="panel-head">
+                        <h3 class="panel-title">Metas por Regional</h3>
+                        <div class="panel-legend">
+                            <span><i class="legend-mark meta1"></i>Meta 1</span>
+                            <span><i class="legend-mark meta2"></i>Meta 2 (fim da barra)</span>
+                        </div>
+                    </div>
+                    <div id="regionalList" class="regional-list">
+                        <div class="loading">Carregando indicadores...</div>
+                    </div>
+                </div>
+
+                <div class="insights-panel">
+                    <div class="panel-head">
+                        <h3 class="panel-title">Evolução do Mês</h3>
+                        <div class="panel-legend">
+                            <span><i class="legend-swatch bars"></i>Faturado no dia</span>
+                            <span><i class="legend-swatch line"></i>Acumulado</span>
+                            <span><i class="legend-swatch pace"></i>Ritmo da Meta 1</span>
+                        </div>
+                    </div>
+                    <div id="dailyChartWrap" class="daily-chart-wrap">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="insights-panel rankings-panel">
+                    <div class="ranking-block">
+                        <h3 class="panel-title">Top 5 Representantes</h3>
+                        <div id="repRanking" class="ranking-list"></div>
+                    </div>
+                    <div class="ranking-block">
+                        <h3 class="panel-title">Top 5 Estados</h3>
+                        <div id="ufRanking" class="ranking-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="insightsFooter" class="insights-footer">&nbsp;</div>
+        </div>
+
+        <div id="viewNotas" class="sheet-view view hidden">
+            <div class="kpi-strip cols-5">
+                <div class="kpi-card">
+                    <div class="kpi-label">Notas no recorte</div>
+                    <div id="notasCount" class="kpi-value">--</div>
+                    <div id="notasCountSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Faturamento bruto</div>
+                    <div id="notasGross" class="kpi-value">--</div>
+                    <div id="notasGrossSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Faturamento líquido</div>
+                    <div id="notasNet" class="kpi-value">--</div>
+                    <div id="notasNetSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Devoluções</div>
+                    <div id="notasReturns" class="kpi-value">--</div>
+                    <div id="notasReturnsSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card highlight">
+                    <div class="kpi-label">Ticket médio</div>
+                    <div id="notasTicket" class="kpi-value">--</div>
+                    <div id="notasTicketSub" class="kpi-sub">&nbsp;</div>
+                </div>
+            </div>
+            <section class="insights-panel sheet-panel">
+                <div class="panel-head">
+                    <h3 class="panel-title">Notas fiscais do recorte</h3>
+                    <span id="notasHint" class="panel-legend"></span>
+                </div>
+                <div class="sheet-scroll">
+                    <table class="sheet">
+                        <thead>
+                            <tr>
+                                <th>Nota</th>
+                                <th>Emissão</th>
+                                <th>Cliente</th>
+                                <th>UF</th>
+                                <th>Canal</th>
+                                <th class="num">Bruto</th>
+                                <th class="num">Líquido</th>
+                                <th class="num">Margem</th>
+                                <th>Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notasBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div id="viewClientes" class="sheet-view view hidden">
+            <div class="kpi-strip cols-5">
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes</div>
+                    <div id="cliCount" class="kpi-value">--</div>
+                    <div id="cliCountSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Novos</div>
+                    <div id="cliNew" class="kpi-value">--</div>
+                    <div id="cliNewSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Recorrentes</div>
+                    <div id="cliRecurring" class="kpi-value">--</div>
+                    <div id="cliRecurringSub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Concentração top 5</div>
+                    <div id="cliTop5" class="kpi-value">--</div>
+                    <div id="cliTop5Sub" class="kpi-sub">&nbsp;</div>
+                </div>
+                <div class="kpi-card highlight">
+                    <div class="kpi-label">Maior conta</div>
+                    <div id="cliTopName" class="kpi-value">--</div>
+                    <div id="cliTopNameSub" class="kpi-sub">&nbsp;</div>
+                </div>
+            </div>
+            <div class="insights-grid clients-grid">
+                <section class="insights-panel">
+                    <div class="panel-head">
+                        <h3 class="panel-title">Maiores contas</h3>
+                        <span class="panel-legend">Participação no líquido do recorte</span>
+                    </div>
+                    <div id="clientList" class="client-list"></div>
+                </section>
+                <section class="insights-panel">
+                    <div class="panel-head">
+                        <h3 class="panel-title">Primeira nota no mês</h3>
+                    </div>
+                    <div id="newClientList" class="client-list"></div>
+                </section>
+            </div>
+        </div>
+
+        <div id="viewCanais" class="sheet-view view hidden">
+            <div id="channelGrid" class="channel-grid"></div>
+            <section class="insights-panel sheet-panel">
+                <div class="panel-head">
+                    <h3 class="panel-title">Participação no faturamento</h3>
+                    <span class="panel-legend">Líquido, devoluções e margem por canal</span>
+                </div>
+                <div id="channelBars" class="channel-bars"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Popup Motivacional (um único popup, exibido em fila) -->
+    <div id="motivationalPopup" class="popup-overlay hidden">
+        <div class="popup-content">
+            <div id="popupIcon" class="popup-icon">🎉</div>
+            <h3 id="popupTitle" class="popup-title">Parabéns!</h3>
+            <p id="popupMessage" class="popup-message">Mensagem motivacional aqui</p>
+            <button id="closePopup" class="popup-btn">Seguir faturando! 💪</button>
+        </div>
+    </div>
+
+    <!-- Painel Admin (protegido) -->
+    <div id="adminPanel" class="popup-overlay hidden">
+        <div class="admin-content">
+            <div class="admin-header">
+                <h2>Painel Administrativo</h2>
+                <button id="closeAdmin" class="close-btn">✕</button>
+            </div>
+
+            <!-- Login -->
+            <div id="loginSection" class="login-section">
+                <h3>Digite a senha de administrador:</h3>
+                <div class="login-form">
+                    <input type="password" id="adminPassword" placeholder="Senha" />
+                    <button id="loginBtn" class="btn-primary">Entrar</button>
+                </div>
+            </div>
+
+            <!-- Conteúdo admin -->
+            <div id="adminContent" class="admin-main hidden">
+                <!-- Tabs -->
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-tab="tab-gam">Gamificação</button>
+                    <button class="admin-tab" data-tab="tab-msg">Mensagens</button>
+                </div>
+
+                <!-- GAMIFICAÇÃO -->
+                <div id="tab-gam" class="tab-pane">
+                    <div class="section-head">
+                        <h3>Gamificação</h3>
+                        <div class="head-actions">
+                            <button id="saveGamification" class="btn-primary">Salvar</button>
+                        </div>
+                    </div>
+
+                    <!-- Linha de cards de configuração -->
+                    <div class="config-cards">
+                        <div class="config-card glass">
+                            <div class="config-card-head">
+                                <span class="icon">🎮</span>
+                                <div>
+                                    <h4>Comportamento</h4>
+                                    <small>Ative a gamificação e selecione efeitos</small>
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <label class="switch-label glass-lite">
+                                    <input type="checkbox" id="gActive">
+                                    <span>Gamificação ativa</span>
+                                </label>
+                                <label class="switch-label glass-lite">
+                                    <input type="checkbox" id="gConfetti">
+                                    <span>Confetti</span>
+                                </label>
+                                <label class="switch-label glass-lite">
+                                    <input type="checkbox" id="gFireworks">
+                                    <span>Fogos</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="config-card glass">
+                            <div class="config-card-head">
+                                <span class="icon">⏱️</span>
+                                <div>
+                                    <h4>Tempos de Exibição</h4>
+                                    <small>Defina por quantos segundos cada popup fica visível</small>
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Duração (Tier) – segundos</label>
+                                    <input type="number" id="gTierSec" min="1" max="30" step="0.5" value="4.5">
+                                </div>
+                                <div class="form-group">
+                                    <label>Duração (Outras) – segundos</label>
+                                    <input type="number" id="gDefaultSec" min="1" max="30" step="0.5" value="3.5">
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <button id="testTier" class="btn-secondary">Testar Tier</button>
+                                <button id="testDefault" class="btn-secondary">Testar Padrão</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Objetivos (tiers) -->
+                    <div class="tiers-toolbar">
+                        <h4>Objetivos (Tiers)</h4>
+                        <button id="addTier" class="btn-secondary">Adicionar Objetivo</button>
+                    </div>
+
+                    <div id="tiersList" class="tiers-list"></div>
+
+                    <!-- Preview -->
+                    <div class="preview-box glass">
+                        <div class="preview-row">
+                            <span>Progresso atual:</span>
+                            <strong id="prevPercent">0%</strong>
+                        </div>
+                        <div class="progress-bar"><div id="prevBar" class="progress-inner" style="width:0%"></div></div>
+                        <div class="preview-row small">
+                            Atual: <b id="prevCurrentTier">-</b> • Próximo: <b id="prevNextTier">-</b>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MENSAGENS -->
+                <div id="tab-msg" class="tab-pane hidden">
+                    <div class="section-head">
+                        <h3>Mensagens</h3>
+                        <button id="reloadMessages" class="btn-secondary">Recarregar</button>
+                    </div>
+
+                    <div class="add-message-section glass">
+                        <h4>Adicionar Nova Frase</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select id="messageType">
+                                    <option value="motivation">Motivação</option>
+                                    <option value="meta_progress">Meta por %</option>
+                                    <option value="alert">Alerta</option>
+                                    <option value="success">Sucesso</option>
+                                    <option value="challenge">Desafio</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Horário (HH:MM)</label>
+                                <input type="time" id="messageTime" />
+                            </div>
+                            <div class="form-group">
+                                <label>Data/Hora Específica</label>
+                                <input type="datetime-local" id="messageDateTime" />
+                            </div>
+                            <div class="form-group">
+                                <label>Recorrência (minutos)</label>
+                                <input type="number" id="messageRecurrence" placeholder="Ex: 30" min="1" />
+                            </div>
+                            <div class="form-group">
+                                <label>% da Meta (0–100)</label>
+                                <input type="number" id="messageMetaPct" placeholder="Ex: 50" min="0" max="100" />
+                                <small id="metaPctHint" class="hint">Habilita quando tipo = meta_progress e coluna existir.</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-inline glass-lite">
+                                    <input type="checkbox" id="messageActive" checked />
+                                    Ativa
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensagem</label>
+                            <textarea id="messageText" placeholder="Digite uma frase motivacional..." rows="3"></textarea>
+                        </div>
+                        <button id="addMessageBtn" class="btn-primary">Adicionar Frase</button>
+                    </div>
+
+                    <div class="messages-list">
+                        <h4>Frases Cadastradas</h4>
+                        <div id="messagesList" class="messages-container">
+                            <div class="loading">Carregando mensagens...</div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- /adminContent -->
+        </div>
+    </div>
+
+    <!-- Efeitos -->
+    <div id="confettiContainer" class="celebration-container"></div>
+    <div id="fireworksContainer" class="celebration-container"></div>
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- ÁUDIO -->
+    <audio id="victorySound" preload="auto">
+        <source src="public/ayrton-senna-tema-da-vitoria.mp3" type="audio/mp3" />
+    </audio>
+    <audio id="celebrationSound" preload="auto">
+        <source src="public/ayrton-senna-tema-da-vitoria.mp3" type="audio/mp3" />
+    </audio>
+
+    <script src="mock-data.js"></script>
+    <script src="script.js"></script>
+
+    <!-- Script Admin/Gamificação/Popups + Background -->
+    <script>
+    (function(){
+        // ===== Estado =====
+        let soundEnabled = true;
+        let userInteracted = false; // libera áudio nos navegadores
+        let adminToken = localStorage.getItem('adm_token') || null;
+        let hasMetaFeature = false;
+        let gamConfig = null;
+
+        // Tempos dinâmicos (ms) – alimentados pela config
+        let popupMs = { tier: 4500, other: 3500 };
+
+        // ===== Fila de popups (sem sobreposição) =====
+        const popupQueue = [];
+        let isShowingPopup = false;
+        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+        // ===== Utils =====
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => Array.from(document.querySelectorAll(s));
+        const fmtPct = (n) => (Number(n||0)).toFixed(1) + '%';
+
+        // ===== API =====
+        async function apiLogin(password){
+            const r = await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
+            const j = await r.json(); if(!r.ok||!j.success) throw new Error(j.error||'Falha no login'); return j.token;
+        }
+        function isTokenExpired(token){
+            try{
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+                return !payload.exp || payload.exp * 1000 <= Date.now();
+            }catch(_){ return true; }
+        }
+        function expireSession(){
+            adminToken = null;
+            localStorage.removeItem('adm_token');
+            $('#loginSection')?.classList.remove('hidden');
+            $('#adminContent')?.classList.add('hidden');
+        }
+        async function authFetch(url, opts={}){
+            const headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + adminToken });
+            if (opts.body) headers['Content-Type'] = 'application/json';
+            const r = await fetch(url, Object.assign({}, opts, { headers }));
+            if (r.status === 401) {
+                expireSession();
+                throw new Error('Sessão expirada. Faça login novamente.');
+            }
+            return r;
+        }
+        async function apiGetMessages(){
+            const r = await authFetch('/api/motivational-messages', { cache: 'no-store' });
+            if(r.status===204) return {messages:[],has_meta_feature:false};
+            const j = await r.json(); if(!j.success) throw new Error(j.error||'Erro ao listar'); return j;
+        }
+        async function apiCreateMessage(payload){
+            const r = await authFetch('/api/motivational-messages',{method:'POST',body:JSON.stringify(payload)});
+            const j = await r.json(); if(!r.ok||!j.success) throw new Error(j.error||'Erro ao criar'); return j.id;
+        }
+        async function apiUpdateMessage(id,payload){
+            const r = await authFetch('/api/motivational-messages/'+id,{method:'PUT',body:JSON.stringify(payload)});
+            let j={}; try{j=await r.json();}catch(_){}
+            if(!r.ok||j.success===false) throw new Error(j.error||'Erro ao atualizar'); return true;
+        }
+        async function apiDeleteMessage(id){
+            const r = await authFetch('/api/motivational-messages/'+id,{method:'DELETE'});
+            const j = await r.json(); if(!r.ok||!j.success) throw new Error(j.error||'Erro ao excluir'); return true;
+        }
+        async function apiGetGConfig(){
+            const r = await authFetch('/api/gamification-config');
+            const j = await r.json(); if(!j.success) throw new Error(j.error||'Erro ao obter config'); return j.config;
+        }
+        async function apiSaveGConfig(cfg){
+            const r = await authFetch('/api/gamification-config',{method:'PUT',body:JSON.stringify(cfg)});
+            const j = await r.json(); if(!j.success) throw new Error(j.error||'Erro ao salvar config'); return j.config;
+        }
+        async function apiGamStatus(){
+            const r = await fetch('/api/gamification/status'); return r.json();
+        }
+        let pendingCursor = null;
+        async function apiPendingMessages(){
+            const url = pendingCursor != null ? '/api/pending-meta-messages?since=' + pendingCursor : '/api/pending-meta-messages';
+            const r = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+            const j = await r.json();
+            if (j.cursor != null) pendingCursor = j.cursor;
+            return j.messages||[];
+        }
+
+        // ===== Som =====
+        document.addEventListener('click', ()=>{ userInteracted = true; }, { once:true, capture:true });
+        document.addEventListener('keydown', ()=>{ userInteracted = true; }, { once:true, capture:true });
+        $('#soundToggle')?.addEventListener('click',()=>{
+            soundEnabled = !soundEnabled;
+            $('#soundIcon').textContent = soundEnabled ? '🔊' : '🔇';
+            userInteracted = true;
+        });
+        function playSound(id){
+            if(!soundEnabled || !userInteracted) return;
+            const el = document.getElementById(id);
+            if(el){ try{ el.currentTime=0; el.play(); }catch(_){ } }
+        }
+
+        // ===== Popup (com auto-dismiss e fila) =====
+        const popup = $('#motivationalPopup');
+        const popupTitle = $('#popupTitle');
+        const popupMessage = $('#popupMessage');
+        const popupIcon = $('#popupIcon');
+        let popupTimer = null;
+
+        $('#closePopup')?.addEventListener('click', hidePopup);
+
+        function enqueuePopup(item){
+            // prioridade: gamificação primeiro
+            if (item.type === 'gamification') {
+                popupQueue.unshift(item);
+            } else {
+                popupQueue.push(item);
+            }
+            processQueue();
+        }
+
+        function processQueue(){
+            if (isShowingPopup) return;
+            const next = popupQueue.shift();
+            if (!next) return;
+
+            isShowingPopup = true;
+            showPopup(next);
+
+            const dur = next.type === 'gamification' ? popupMs.tier : popupMs.other;
+            const duration = clamp(Number(dur)||0, 800, 60000);
+            clearTimeout(popupTimer);
+            popupTimer = setTimeout(() => {
+                hidePopup();
+            }, duration);
+        }
+
+        function showPopup({ title='Parabéns!', text='', icon='🎉', type='default', celebrate={}, percentage=0 }){
+            popupTitle.textContent = title;
+            popupMessage.textContent = text;
+            popupIcon.textContent = icon;
+            popup.classList.remove('hidden');
+
+            // efeitos + som
+            if (type === 'gamification') {
+                if (celebrate.confetti) spawnConfetti(2500, 100);
+                if (celebrate.fireworks) spawnFireworks(2500, 6);
+                // Só toca o som de vitória se for o tier de 100% (meta final)
+                if (percentage === 100) {
+                    playSound('victorySound'); // som de vitória apenas para meta final
+                }
+            } else {
+                if (celebrate.confetti) spawnConfetti(2000, 60);
+                playSound('celebrationSound'); // som genérico
+            }
+        }
+
+        function hidePopup(){
+            popup.classList.add('hidden');
+            clearTimeout(popupTimer);
+            popupTimer = null;
+            isShowingPopup = false;
+            processQueue();
+        }
+
+        // ===== Efeitos (sem libs) =====
+        function spawnConfetti(durationMs=2200,count=70){
+            const c = $('#confettiContainer'); if(!c) return;
+            for(let i=0;i<count;i++){
+                const piece=document.createElement('div');
+                piece.className='confetti-piece';
+                piece.style.left=Math.random()*100+'%';
+                piece.style.background=`hsl(${Math.random()*360},90%,60%)`;
+                piece.style.animationDuration=(1.2+Math.random()*1.2)+'s';
+                c.appendChild(piece);
+                setTimeout(()=>piece.remove(),durationMs);
+            }
+        }
+        function spawnFireworks(durationMs=1800,bursts=4){
+            const c=$('#fireworksContainer'); if(!c) return;
+            for(let b=0;b<bursts;b++){
+                setTimeout(()=>{
+                    const burst=document.createElement('div');
+                    burst.className='firework-burst';
+                    burst.style.left=(10+Math.random()*80)+'%';
+                    burst.style.top=(10+Math.random()*40)+'%';
+                    c.appendChild(burst);
+                    for(let i=0;i<18;i++){
+                        const dot=document.createElement('span');
+                        dot.className='firework-dot';
+                        dot.style.transform=`rotate(${(360/18)*i}deg) translate(0,-1px)`;
+                        burst.appendChild(dot);
+                    }
+                    setTimeout(()=>burst.remove(),durationMs);
+                },b*220);
+            }
+        }
+
+        // ===== ADMIN: abrir/fechar e aplicar background do sistema =====
+        $('#adminBtn')?.addEventListener('click',()=>{
+            $('#adminPanel').classList.remove('hidden');
+            setActiveTab('tab-gam');
+            applyAdminBackgroundFromSystem();   // <<< AQUI: aplica o mesmo background do sistema
+            renderMessagesListLoading();
+            if(adminToken && isTokenExpired(adminToken)) expireSession();
+            if(adminToken){
+                $('#loginSection').classList.add('hidden');
+                $('#adminContent').classList.remove('hidden');
+                refreshGamUI(); loadMessages();
+            }else{
+                $('#loginSection').classList.remove('hidden');
+                $('#adminContent').classList.add('hidden');
+            }
+        });
+        $('#closeAdmin')?.addEventListener('click',()=>$('#adminPanel').classList.add('hidden'));
+
+        function applyAdminBackgroundFromSystem(){
+            const bodyStyles = getComputedStyle(document.body);
+            const bgImage = bodyStyles.backgroundImage;
+            const bgColor = bodyStyles.backgroundColor;
+            const panel = document.getElementById('adminPanel');
+            const content = panel?.querySelector('.admin-content');
+            if(panel){
+                // herda exatamente o mesmo background do body (gradiente, imagem, cor, etc.)
+                panel.style.backgroundImage = bgImage !== 'none' ? bgImage : 'none';
+                panel.style.backgroundColor = bgColor || 'transparent';
+                panel.style.backdropFilter = 'none'; // sem escurecer
+            }
+            if(content){
+                // o conteúdo em si fica transparente para "ver" o background
+                content.style.background = 'transparent';
+                content.style.boxShadow = 'none';
+            }
+        }
+
+        // Tabs
+        $$('.admin-tab').forEach(btn=>{
+            btn.addEventListener('click',()=>setActiveTab(btn.dataset.tab));
+        });
+        function setActiveTab(id){
+            $$('.admin-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+            $$('.tab-pane').forEach(p=>p.classList.add('hidden'));
+            document.getElementById(id)?.classList.remove('hidden');
+        }
+
+        // ===== Login =====
+        $('#loginBtn')?.addEventListener('click', async ()=>{
+            const pwd = $('#adminPassword').value.trim();
+            if(!pwd){ alert('Informe a senha'); return; }
+            try{
+                const token = await apiLogin(pwd);
+                adminToken = token; localStorage.setItem('adm_token', token);
+                $('#loginSection').classList.add('hidden');
+                $('#adminContent').classList.remove('hidden');
+                await refreshGamUI(); await loadMessages();
+            }catch(e){ alert(e.message); }
+        });
+
+        // ===== Gamificação =====
+        async function refreshGamUI(){
+            try{
+                const st = await apiGamStatus();
+                $('#prevPercent').textContent = fmtPct(st.percentage||0);
+                $('#prevBar').style.width = Math.max(0, Math.min(100, Number(st.percentage||0))) + '%';
+                $('#prevCurrentTier').textContent = st.currentTier ? `${st.currentTier.title||'-'} (${st.currentTier.threshold}%)` : '-';
+                $('#prevNextTier').textContent = st.nextTier ? `${st.nextTier.title||'-'} (${st.nextTier.threshold}%)` : '-';
+            }catch(_){}
+            if(!adminToken) return;
+            try{
+                gamConfig = await apiGetGConfig();
+                // toggles
+                $('#gActive').checked = !!gamConfig.active;
+                $('#gConfetti').checked = !!(gamConfig.celebrate?.confetti);
+                $('#gFireworks').checked = !!(gamConfig.celebrate?.fireworks);
+                // tempos
+                const tierMs = Number(gamConfig.display?.tier_ms ?? 4500);
+                const otherMs = Number(gamConfig.display?.default_ms ?? 3500);
+                popupMs.tier = clamp(tierMs, 800, 60000);
+                popupMs.other = clamp(otherMs, 800, 60000);
+                $('#gTierSec').value = (popupMs.tier/1000).toFixed(1);
+                $('#gDefaultSec').value = (popupMs.other/1000).toFixed(1);
+                // tiers
+                renderTiers(gamConfig.tiers||[]);
+            }catch(e){
+                gamConfig = { active:true, celebrate:{confetti:true,fireworks:true}, tiers:[], display:{ tier_ms:4500, default_ms:3500 } };
+                popupMs = { tier:4500, other:3500 };
+                $('#gTierSec').value = '4.5';
+                $('#gDefaultSec').value = '3.5';
+                renderTiers([]);
+            }
+        }
+
+        function renderTiers(tiers){
+            const box=$('#tiersList'); box.innerHTML='';
+            const list = Array.isArray(tiers)?tiers.slice():[];
+            if(list.length===0){
+                box.innerHTML='<div class="empty-hint">Nenhum objetivo. Clique em "Adicionar Objetivo".</div>';
+                return;
+            }
+            list.forEach((t,idx)=>{
+                const row=document.createElement('div');
+                row.className='tier-row glass';
+                row.innerHTML = `
+                  <div class="field">
+                    <label>%</label>
+                    <input type="number" class="tier-threshold" min="0" max="100" value="${Number(t.threshold||0)}">
+                  </div>
+                  <div class="field">
+                    <label>Código</label>
+                    <input type="text" class="tier-code" value="${t.code?String(t.code).replace(/"/g,'&quot;'):''}" placeholder="Opcional">
+                  </div>
+                  <div class="field">
+                    <label>Título</label>
+                    <input type="text" class="tier-title" value="${t.title?String(t.title).replace(/"/g,'&quot;'):''}">
+                  </div>
+                  <div class="field stretch">
+                    <label>Mensagem</label>
+                    <input type="text" class="tier-message" value="${t.message?String(t.message).replace(/"/g,'&quot;'):''}">
+                  </div>
+                  <div class="field actions">
+                    <button class="btn-danger btn-remove">Remover</button>
+                  </div>
+                `;
+                row.querySelector('.btn-remove').addEventListener('click',()=>{
+                    gamConfig.tiers.splice(idx,1); renderTiers(gamConfig.tiers);
+                });
+                row.querySelector('.tier-threshold').addEventListener('input',e=>{
+                    gamConfig.tiers[idx].threshold = Number(e.target.value||0);
+                });
+                row.querySelector('.tier-code').addEventListener('input',e=>{
+                    gamConfig.tiers[idx].code = e.target.value;
+                });
+                row.querySelector('.tier-title').addEventListener('input',e=>{
+                    gamConfig.tiers[idx].title = e.target.value;
+                });
+                row.querySelector('.tier-message').addEventListener('input',e=>{
+                    gamConfig.tiers[idx].message = e.target.value;
+                });
+                box.appendChild(row);
+            });
+        }
+
+        $('#addTier')?.addEventListener('click',()=>{
+            if(!gamConfig) gamConfig={active:true,celebrate:{confetti:true,fireworks:true},tiers:[],display:{tier_ms:4500,default_ms:3500}};
+            gamConfig.tiers.push({ threshold:10, code:'', title:'', message:'' });
+            renderTiers(gamConfig.tiers);
+        });
+
+        $('#saveGamification')?.addEventListener('click', async ()=>{
+            if(!adminToken){ alert('Faça login.'); return; }
+            try{
+                const active = $('#gActive').checked;
+                const confetti = $('#gConfetti').checked;
+                const fireworks = $('#gFireworks').checked;
+                // tempos
+                const tierSec = parseFloat($('#gTierSec').value || '4.5');
+                const defSec  = parseFloat($('#gDefaultSec').value || '3.5');
+                popupMs.tier = clamp(Math.round((isNaN(tierSec)?4.5:tierSec)*1000), 800, 60000);
+                popupMs.other = clamp(Math.round((isNaN(defSec)?3.5:defSec)*1000), 800, 60000);
+                $('#gTierSec').value = (popupMs.tier/1000).toFixed(1);
+                $('#gDefaultSec').value = (popupMs.other/1000).toFixed(1);
+
+                const tiers = (gamConfig?.tiers||[]).slice().sort((a,b)=>a.threshold-b.threshold);
+                const payload = {
+                    active,
+                    celebrate:{confetti, fireworks},
+                    tiers,
+                    display:{ tier_ms: popupMs.tier, default_ms: popupMs.other }
+                };
+                gamConfig = await apiSaveGConfig(payload);
+                alert('Configuração salva!');
+                await refreshGamUI();
+            }catch(e){ alert(e.message); }
+        });
+
+        // Testes de popup
+        $('#testTier')?.addEventListener('click', ()=>{
+            enqueuePopup({
+                title: 'Objetivo Alcançado!',
+                text: 'Você liberou um tier de performance. Vamos com tudo! 🚀',
+                icon: '🏅',
+                type: 'gamification',
+                celebrate: { confetti: $('#gConfetti').checked, fireworks: $('#gFireworks').checked }
+            });
+        });
+        $('#testDefault')?.addEventListener('click', ()=>{
+            enqueuePopup({
+                title: 'Meta parcial atingida!',
+                text: 'Excelente! Continuem no ritmo! 💪',
+                icon: '🎯',
+                type: 'meta_progress',
+                celebrate: { confetti: $('#gConfetti').checked }
+            });
+        });
+
+        // ===== Mensagens (CRUD) =====
+        function renderMessagesListLoading(){
+            $('#messagesList').innerHTML='<div class="loading">Carregando mensagens...</div>';
+        }
+        function messageRowTemplate(row){
+            const pctInput = (hasMetaFeature && row.type==='meta_progress')
+              ? `<input type="number" class="msg-meta" min="0" max="100" value="${row.meta_percentage ?? ''}" title="% da meta">`
+              : `<input type="number" class="msg-meta" min="0" max="100" value="" disabled title="% da meta">`;
+            const timeVal = (row.show_at && String(row.show_at).length===8) ? row.show_at : '';
+            const safeText = (row.text||'').replace(/"/g,'&quot;');
+            return `
+              <div class="message-row glass" data-id="${row.id}">
+                <select class="msg-type">
+                  <option value="motivation" ${row.type==='motivation'?'selected':''}>motivation</option>
+                  <option value="meta_progress" ${row.type==='meta_progress'?'selected':''}>meta_progress</option>
+                  <option value="alert" ${row.type==='alert'?'selected':''}>alert</option>
+                  <option value="success" ${row.type==='success'?'selected':''}>success</option>
+                  <option value="challenge" ${row.type==='challenge'?'selected':''}>challenge</option>
+                </select>
+                <input class="msg-text" type="text" value="${safeText}" placeholder="Mensagem">
+                <input class="msg-time" type="time" value="${timeVal}">
+                <input class="msg-datetime" type="datetime-local" value="">
+                <input class="msg-rec" type="number" min="0" value="${row.recurrence_minutes ?? ''}" placeholder="Rec. (min)">
+                ${pctInput}
+                <label class="switch switch--small msg-active" title="Ativar/Desativar">
+                  <input type="checkbox" class="msg-act" ${row.active?'checked':''}>
+                  <span class="slider"></span>
+                </label>
+                <button class="btn-secondary btn-save">Salvar</button>
+                <button class="btn-danger btn-del">Excluir</button>
+              </div>
+            `;
+        }
+        async function loadMessages(){
+            if(!adminToken) return;
+            try{
+                renderMessagesListLoading();
+                const r = await apiGetMessages();
+                hasMetaFeature = !!r.has_meta_feature;
+                const box = $('#messagesList');
+                if(!r.messages || r.messages.length===0){
+                    box.innerHTML = '<div class="empty-hint">Nenhuma mensagem cadastrada.</div>';
+                    return;
+                }
+                box.innerHTML = r.messages.map(messageRowTemplate).join('');
+                // bind
+                $$('#messagesList .message-row').forEach(rowEl=>{
+                    const id = Number(rowEl.dataset.id);
+                    const $type = rowEl.querySelector('.msg-type');
+                    const $text = rowEl.querySelector('.msg-text');
+                    const $time = rowEl.querySelector('.msg-time');
+                    const $dt   = rowEl.querySelector('.msg-datetime');
+                    const $rec  = rowEl.querySelector('.msg-rec');
+                    const $pct  = rowEl.querySelector('.msg-meta');
+                    const $act  = rowEl.querySelector('.msg-act');
+                    const $save = rowEl.querySelector('.btn-save');
+                    const $del  = rowEl.querySelector('.btn-del');
+
+                    function togglePct(){
+                        if($type.value==='meta_progress' && hasMetaFeature) $pct.disabled=false;
+                        else { $pct.disabled=true; $pct.value=''; }
+                    }
+                    togglePct();
+                    $type.addEventListener('change', togglePct);
+
+                    // salvar patch manual
+                    $save.addEventListener('click', async ()=>{
+                        const payload = {};
+                        if($type.value) payload.type = $type.value;
+                        if($text.value.trim()) payload.text = $text.value.trim();
+                        payload.time = $time.value || null;
+                        payload.datetime = $dt.value || null;
+                        payload.recurrence_minutes = $rec.value ? Number($rec.value) : null;
+                        if($type.value==='meta_progress' && hasMetaFeature){
+                            payload.meta_percentage = $pct.value ? Number($pct.value) : null;
+                        }
+                        payload.active = !!$act.checked;
+                        try{
+                            $save.disabled = true; $save.textContent = 'Salvando...';
+                            await apiUpdateMessage(id,payload);
+                            await loadMessages();
+                        }catch(e){ alert(e.message); }
+                        finally{ $save.disabled = false; $save.textContent = 'Salvar'; }
+                    });
+
+                    // toggle imediato
+                    $act.addEventListener('change', async ()=>{
+                        const newVal = $act.checked;
+                        const prev = !newVal;
+                        try{
+                            $save.disabled = true; $save.textContent = 'Salvando...';
+                            await apiUpdateMessage(id, { active: newVal });
+                        }catch(e){
+                            alert(e.message);
+                            $act.checked = prev;
+                        }finally{
+                            $save.disabled = false; $save.textContent = 'Salvar';
+                        }
+                    });
+
+                    // excluir
+                    $del.addEventListener('click', async ()=>{
+                        if(!confirm('Excluir esta mensagem?')) return;
+                        try{ await apiDeleteMessage(id); await loadMessages(); }catch(e){ alert(e.message); }
+                    });
+                });
+            }catch(e){ alert(e.message); }
+        }
+
+        // Form nova mensagem
+        $('#addMessageBtn')?.addEventListener('click', async ()=>{
+            if(!adminToken){ alert('Faça login.'); return; }
+            const type = $('#messageType').value;
+            const text = $('#messageText').value.trim();
+            const time = $('#messageTime').value || null;
+            const datetime = $('#messageDateTime').value || null;
+            const rec = $('#messageRecurrence').value ? Number($('#messageRecurrence').value) : null;
+            const metaPct = $('#messageMetaPct').value ? Number($('#messageMetaPct').value) : null;
+            const active = $('#messageActive').checked;
+
+            if(!text){ alert('Informe o texto.'); return; }
+            const payload = { type, text, time, datetime, recurrence_minutes: rec, active };
+            if(type==='meta_progress' && hasMetaFeature) payload.meta_percentage = metaPct;
+
+            try{
+                await apiCreateMessage(payload);
+                // limpa
+                $('#messageText').value='';
+                $('#messageTime').value='';
+                $('#messageDateTime').value='';
+                $('#messageRecurrence').value='';
+                $('#messageMetaPct').value='';
+                await loadMessages();
+            }catch(e){ alert(e.message); }
+        });
+
+        $('#reloadMessages')?.addEventListener('click', loadMessages);
+
+        // ===== Polling de mensagens pendentes (enfileirado) =====
+        async function pollPending(){
+            try{
+                const msgs = await apiPendingMessages();
+                if (!Array.isArray(msgs) || msgs.length===0) return;
+
+                // gamificação primeiro
+                msgs.sort((a,b)=>{
+                    const pa = a.type === 'gamification' ? 0 : 1;
+                    const pb = b.type === 'gamification' ? 0 : 1;
+                    return pa - pb;
+                });
+
+                for(const m of msgs){
+                    const title = m.type==='gamification' ? (m.title||'Objetivo alcançado!') : (m.title||'Meta parcial atingida!');
+                    const icon  = m.type==='gamification' ? '🏅' : '🎯';
+                    enqueuePopup({ 
+                        title, 
+                        text: m.text||'', 
+                        icon, 
+                        type: m.type || 'default', 
+                        celebrate: m.celebrate || {},
+                        percentage: m.percentage || 0
+                    });
+                }
+            }catch(_){}
+        }
+        setInterval(pollPending, 7000);
+
+        // ===== Estilos do painel (inclui glassmorphism) =====
+        const style = document.createElement('style');
+        style.textContent = `
+        /* Overlay do painel: usa o MESMO background do sistema (definido via JS) */
+        #adminPanel.popup-overlay{ display:flex; align-items:center; justify-content:center; padding:20px; background-size:cover; background-attachment:fixed; }
+        .admin-content{ width:min(1120px, 95vw); height:min(92vh, 920px); display:flex; flex-direction:column; border-radius:16px; padding:16px; overflow:hidden; }
+        .admin-header{ display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid rgba(255,255,255,0.16); padding-bottom:8px; margin-bottom:12px; flex: 0 0 auto; }
+        .close-btn{ border:none; background:rgba(255,255,255,0.18); color:#fff; border-radius:12px; padding:6px 10px; cursor:pointer; backdrop-filter: blur(6px); }
+        .admin-main{ flex: 1 1 auto; overflow:auto; }
+
+        /* Tabs */
+        .admin-tabs{ position:sticky; top:0; z-index:2; background:transparent; padding:6px 0; display:flex; gap:8px; border-bottom:1px solid rgba(255,255,255,0.18); margin-bottom:10px; backdrop-filter: blur(4px); }
+        .admin-tab{ border:1px solid rgba(255,255,255,0.28); background:rgba(255,255,255,0.14); color:#fff; border-radius:10px; padding:8px 12px; cursor:pointer; font-size:.95rem; }
+        .admin-tab.active{ background:#0b5cff; color:#fff; border-color:#0b5cff; }
+
+        /* Botões */
+        .btn-primary{ background:#0b5cff; color:#fff; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; }
+        .btn-secondary{ background:rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.28); padding:8px 12px; border-radius:10px; cursor:pointer; }
+        .btn-danger{ background:#ff4d4f; color:#fff; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; }
+        .head-actions{ display:flex; gap:8px; }
+        .section-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:6px 0 12px; color:#fff; }
+
+        /* Cards de configuração */
+        .config-cards{ display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap:12px; margin-bottom:12px; }
+        .config-card{ grid-column: span 6; }
+        .config-card-head{ display:flex; gap:12px; align-items:center; margin-bottom:8px; color:#fff; }
+        .config-card-head .icon{ font-size:22px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.18); border-radius:8px; }
+        .config-row{ display:flex; flex-wrap:wrap; gap:10px; }
+        .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+        @media (max-width: 900px){ .config-card{ grid-column: span 12; } .grid-2{ grid-template-columns:1fr; } }
+
+        /* Glassmorphism helpers */
+        .glass{ background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.24); border-radius:14px; padding:12px; backdrop-filter: blur(10px) saturate(1.1); }
+        .glass-lite{ background: rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); border-radius:10px; padding:6px 10px; backdrop-filter: blur(6px); }
+
+        /* Inputs */
+        .switch-label{ display:flex; align-items:center; gap:8px; font-size:.95rem; color:#fff; }
+        .form-group{ display:flex; flex-direction:column; gap:6px; color:#fff; }
+        .form-group input, .form-group select, .form-group textarea{ padding:8px 10px; border:1px solid rgba(255,255,255,0.28); border-radius:8px; background:rgba(255,255,255,0.12); color:#fff; }
+        .form-group textarea{ resize:vertical; }
+        .hint{ color:#eaeaea; font-size:.85rem; }
+
+        /* Tiers */
+        .tiers-toolbar{ display:flex; align-items:center; justify-content:space-between; margin:10px 0; color:#fff; }
+        .tiers-list{ display:flex; flex-direction:column; gap:8px; }
+        .tier-row{ display:grid; gap:10px; grid-template-columns: repeat(12, minmax(0,1fr)); align-items:end; }
+        .tier-row .field{ display:flex; flex-direction:column; gap:4px; grid-column: span 3; }
+        .tier-row .field.stretch{ grid-column: span 4; }
+        .tier-row .field.actions{ grid-column: span 2; display:flex; align-items:center; justify-content:flex-end; }
+        .tier-row input{ width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.28); border-radius:8px; background:rgba(255,255,255,0.12); color:#fff; }
+        @media (max-width: 980px){ .tier-row .field{ grid-column: span 6; } .tier-row .field.stretch{ grid-column: span 12; } .tier-row .field.actions{ grid-column: span 12; justify-content:flex-start; } }
+        @media (max-width: 600px){ .tier-row .field{ grid-column: span 12; } }
+
+        /* Preview */
+        .preview-box{ color:#fff; }
+        .preview-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+        .preview-row.small{ font-size:.9rem; opacity:.9; }
+        .progress-bar{ width:100%; height:10px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); border-radius:999px; overflow:hidden; }
+        .progress-inner{ height:100%; background:#0b5cff; }
+
+        /* Mensagens */
+        .messages-container{ display:flex; flex-direction:column; gap:8px; }
+        .message-row{ display:grid; gap:8px; grid-template-columns: 160px 1fr 140px 200px 140px 140px 110px 110px 110px; align-items:center; color:#fff; }
+        .message-row input,.message-row select{ width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.28); border-radius:8px; background:rgba(255,255,255,0.12); color:#fff; }
+        .message-row .msg-text{ min-width:180px; word-break:break-word; }
+        @media (max-width: 1200px){ .message-row{ grid-template-columns: 160px 1fr 140px 200px 140px 140px 110px; } }
+        @media (max-width: 900px){ .message-row{ grid-template-columns: 1fr; } }
+
+        /* Switch pequeno */
+        .switch{ position:relative; display:inline-block; width:46px; height:26px; }
+        .switch input{ opacity:0; width:0; height:0; }
+        .switch .slider{ position:absolute; cursor:pointer; inset:0; background:#bbb; border-radius:999px; transition:.2s; }
+        .switch .slider:before{ content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; background:white; border-radius:50%; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+        .switch input:checked + .slider{ background:#27ae60; }
+        .switch input:checked + .slider:before{ transform:translateX(20px); }
+
+        /* Efeitos containers */
+        .celebration-container{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:9999; }
+        .confetti-piece{ position:absolute; top:-18px; width:8px; height:14px; transform:rotate(0deg); animation: confettiFall linear forwards; }
+        @keyframes confettiFall { to { transform: translateY(105vh) rotate(720deg);} }
+        .firework-burst{ position:absolute; width:6px; height:6px; }
+        .firework-dot{ position:absolute; width:4px; height:4px; background:#ffd54f; border-radius:50%; animation: fw 1s ease-out forwards; }
+        @keyframes fw { 0%{ transform: translate(0,0) scale(1); opacity:1;} 100%{ transform: translate(110px,0) scale(.5); opacity:0; } }
+        `;
+        document.head.appendChild(style);
+    })();
+    </script>
+
+</body>
+</html>
