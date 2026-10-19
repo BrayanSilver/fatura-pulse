@@ -111,6 +111,7 @@
                     <div class="ring-legend">
                         <span><i class="legend-dot main"></i>Meta 1</span>
                         <span><i class="legend-dot violet"></i>Meta 2 <b id="meta2PctInline">0%</b></span>
+                        <span><i class="legend-dot amber"></i>Meta 3 <b id="meta3PctInline">0%</b></span>
                     </div>
                 </div>
                 <div class="chart-wrapper">
@@ -145,11 +146,15 @@
                 <div class="televendas-metas">
                     <div class="televendas-meta-card">
                         <span class="televendas-meta-label"><i class="legend-dot green"></i>Meta 1</span>
-                        <div id="televendasMeta1Value" class="televendas-meta-value green">R$ 3.000.000,00</div>
+                        <div id="televendasMeta1Value" class="televendas-meta-value green">R$ 2.200.000,00</div>
                     </div>
                     <div class="televendas-meta-card">
                         <span class="televendas-meta-label"><i class="legend-dot violet"></i>Meta 2</span>
-                        <div id="televendasMeta2Value" class="televendas-meta-value purple">R$ 4.000.000,00</div>
+                        <div id="televendasMeta2Value" class="televendas-meta-value purple">R$ 2.800.000,00</div>
+                    </div>
+                    <div class="televendas-meta-card">
+                        <span class="televendas-meta-label"><i class="legend-dot amber"></i>Meta 3</span>
+                        <div id="televendasMeta3Value" class="televendas-meta-value gold">R$ 3.500.000,00</div>
                     </div>
                 </div>
             </section>
@@ -158,11 +163,15 @@
             <aside class="info-cards">
                 <div class="info-card accent-green">
                     <div class="card-label">Meta 1</div>
-                    <div id="goalValue" class="card-value green">R$ 19.000.000,00</div>
+                    <div id="goalValue" class="card-value green">R$ 12.500.000,00</div>
                 </div>
                 <div class="info-card accent-violet">
                     <div class="card-label">Meta 2</div>
-                    <div id="meta2GoalValue" class="card-value purple">R$ 21.000.000,00</div>
+                    <div id="meta2GoalValue" class="card-value purple">R$ 15.000.000,00</div>
+                </div>
+                <div class="info-card accent-amber">
+                    <div class="card-label">Meta 3</div>
+                    <div id="meta3GoalValue" class="card-value gold">R$ 18.000.000,00</div>
                 </div>
                 <div class="info-card accent-white">
                     <div class="card-label">Faturado</div>
@@ -182,6 +191,12 @@
                     <div class="status-indicator">
                         <div id="meta2StatusDot" class="status-dot-large"></div>
                         <span id="meta2StatusText">Carregando...</span>
+                    </div>
+                </div>
+                <div class="info-card status-card">
+                    <div class="status-indicator">
+                        <div id="meta3StatusDot" class="status-dot-large"></div>
+                        <span id="meta3StatusText">Carregando...</span>
                     </div>
                 </div>
             </aside>
@@ -233,7 +248,8 @@
                         <h3 class="panel-title">Metas por Regional</h3>
                         <div class="panel-legend">
                             <span><i class="legend-mark meta1"></i>Meta 1</span>
-                            <span><i class="legend-mark meta2"></i>Meta 2 (fim da barra)</span>
+                            <span><i class="legend-mark meta2"></i>Meta 2</span>
+                            <span><i class="legend-mark meta3"></i>Meta 3 (fim da barra)</span>
                         </div>
                     </div>
                     <div id="regionalList" class="regional-list">
@@ -248,6 +264,7 @@
                             <span><i class="legend-swatch bars"></i>Faturado no dia</span>
                             <span><i class="legend-swatch line"></i>Acumulado</span>
                             <span><i class="legend-swatch pace"></i>Ritmo da Meta 1</span>
+                            <span><i class="legend-swatch pace3"></i>Ritmo da Meta 3</span>
                         </div>
                     </div>
                     <div id="dailyChartWrap" class="daily-chart-wrap">

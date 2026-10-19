@@ -22,8 +22,9 @@
     const pct = (v) => nf1.format(v || 0) + '%';
     const plural = (n, one, many) => `${nf0.format(n)} ${n === 1 ? one : many}`;
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
-    const toneFor = (value, meta1, meta2) => {
+    const toneFor = (value, meta1, meta2, meta3) => {
       if (!(meta1 > 0)) return 'tone-neutral';
+      if (meta3 > 0 && value >= meta3) return 'tone-gold';
       if (meta2 > 0 && value >= meta2) return 'tone-purple';
       const p = value / meta1 * 100;
       return p >= 100 ? 'tone-green' : p >= 80 ? 'tone-amber' : 'tone-red';
@@ -110,12 +111,16 @@
   
       const pct1 = this.goalValue > 0 ? this.currentValue / this.goalValue * 100 : 0;
       const pct2 = this.meta2Goal > 0 ? this.currentValue / this.meta2Goal * 100 : 0;
+      const pct3 = this.meta3Goal > 0 ? this.currentValue / this.meta3Goal * 100 : 0;
       drawTicks(ctx, c, c, 220);
-      drawRing(ctx, c, c, 190, 24, Math.min(pct1 / 100, 1), ringTone(pct1), 22);
-      drawRing(ctx, c, c, 157, 7, Math.min(pct2 / 100, 1), RING_COLORS.violet, 10);
-  
+      drawRing(ctx, c, c, 190, 22, Math.min(pct1 / 100, 1), ringTone(pct1), 22);
+      drawRing(ctx, c, c, 160, 8, Math.min(pct2 / 100, 1), RING_COLORS.violet, 10);
+      drawRing(ctx, c, c, 142, 6, Math.min(pct3 / 100, 1), RING_COLORS.amber, 8);
+
       const inline = byId('meta2PctInline');
       if (inline) inline.textContent = pct(pct2);
+      const inline3 = byId('meta3PctInline');
+      if (inline3) inline3.textContent = pct(pct3);
     };
   
     SalesDashboard.prototype.drawTelevendasChart = function () {
@@ -123,11 +128,15 @@
       const ctx = this.televendasCtx, size = 240, c = size / 2;
       ctx.clearRect(0, 0, size, size);
   
-      const percentage = this.televendasGoal > 0 ? this.televendasValue / this.televendasGoal * 100 : 0;
-      drawRing(ctx, c, c, 100, 16, Math.min(percentage / 100, 1), percentage >= 100 ? RING_COLORS.green : RING_COLORS.sky, 12);
+      const pct1 = this.televendasGoal > 0 ? this.televendasValue / this.televendasGoal * 100 : 0;
+      const pct2 = this.televendasMeta2 > 0 ? this.televendasValue / this.televendasMeta2 * 100 : 0;
+      const pct3 = this.televendasMeta3 > 0 ? this.televendasValue / this.televendasMeta3 * 100 : 0;
+      drawRing(ctx, c, c, 100, 14, Math.min(pct1 / 100, 1), pct1 >= 100 ? RING_COLORS.green : RING_COLORS.sky, 12);
+      drawRing(ctx, c, c, 82, 6, Math.min(pct2 / 100, 1), RING_COLORS.violet, 8);
+      drawRing(ctx, c, c, 68, 5, Math.min(pct3 / 100, 1), RING_COLORS.amber, 6);
   
       const pctEl = byId('televendasPct');
-      if (pctEl) pctEl.textContent = pct(percentage);
+      if (pctEl) pctEl.textContent = pct(pct1);
       const label = byId('televendasDiffLabel');
       if (label) label.textContent = this.televendasValue >= this.televendasGoal ? 'Acima da Meta 1' : 'Faltam para a Meta 1';
     };
@@ -144,7 +153,8 @@
       paint(byId('chartCurrentValue'), 'color', 'var(--text-strong)');
       paint(document.querySelector('.status-dot-large'), 'background', toneColor(percentage));
       paint(byId('differenceValue'), 'color', this.currentValue >= this.goalValue ? 'var(--green)' : 'var(--rose)');
-      paint(byId('meta2StatusDot'), 'background', this.currentValue >= this.meta2Goal ? 'var(--green)' : 'var(--rose)');
+      paint(byId('meta2StatusDot'), 'background', this.currentValue >= this.meta2Goal ? 'var(--green)' : 'var(--violet)');
+      paint(byId('meta3StatusDot'), 'background', this.currentValue >= this.meta3Goal ? 'var(--green)' : 'var(--amber)');
     };
   
     const baseUpdateTelevendasDisplayValues = SalesDashboard.prototype.updateTelevendasDisplayValues;
@@ -161,14 +171,15 @@
     SalesDashboard.prototype.updateDashboard = function (data) {
       if (dbGoals && data) {
         if (dbGoals.meta2 > 0) this.meta2Goal = dbGoals.meta2;
-        data = Object.assign({}, data, { goal: dbGoals.meta1 });
+        if (dbGoals.meta3 > 0) this.meta3Goal = dbGoals.meta3;
+        data = Object.assign({}, data, { goal: dbGoals.meta1, meta3: dbGoals.meta3 });
       }
       return baseUpdateDashboard.call(this, data);
     };
   
     function applyDbGoals(goals) {
       if (!goals || !(goals.meta1 > 0)) return;
-      const changed = !dbGoals || dbGoals.meta1 !== goals.meta1 || dbGoals.meta2 !== goals.meta2;
+      const changed = !dbGoals || dbGoals.meta1 !== goals.meta1 || dbGoals.meta2 !== goals.meta2 || dbGoals.meta3 !== goals.meta3;
       dbGoals = goals;
       if (!changed || typeof dashboard === 'undefined' || !dashboard || !dashboard.hasInitialData || !dashboard.cachedSalesData) return;
       dashboard.updateDashboard(dashboard.cachedSalesData);
@@ -309,7 +320,7 @@
       const snap = window.LumiMock.snapshot();
       if (snap.signature === lastInsightSig && insights) return;
       lastInsightSig = snap.signature;
-      dbGoals = snap.insights.goals || { meta1: 0, meta2: 0 };
+      dbGoals = snap.insights.goals || { meta1: 0, meta2: 0, meta3: 0 };
       if (typeof dashboard !== 'undefined' && dashboard && dashboard.applySnapshot) dashboard.applySnapshot(snap);
       insights = snap.insights;
       insights.orders = snap.orders || [];
@@ -400,7 +411,7 @@
   
       if (p.projection != null) {
         const sub = (meta1 > 0 ? `${pct(p.projection / meta1 * 100)} da Meta 1 · ` : '') + `média ${brlShort(p.dailyAverage)}/dia útil`;
-        setKpi('kpiProjection', brl(p.projection), sub, toneFor(p.projection, meta1, insights.goals && insights.goals.meta2));
+        setKpi('kpiProjection', brl(p.projection), sub, toneFor(p.projection, meta1, insights.goals && insights.goals.meta2, insights.goals && insights.goals.meta3));
       } else {
         setKpi('kpiProjection', '--', 'Disponível após o 1º dia útil');
       }
@@ -568,14 +579,15 @@
       }
       box.innerHTML = list.map(r => {
         const hasGoal = r.meta1 > 0;
-        const scale = Math.max(r.meta2 || 0, r.meta1 || 0, r.value, 1);
+        const scale = Math.max(r.meta3 || 0, r.meta2 || 0, r.meta1 || 0, r.value, 1);
         const fill = Math.max(0, Math.min(100, r.value / scale * 100));
-        const tone = toneFor(r.value, r.meta1, r.meta2);
+        const tone = toneFor(r.value, r.meta1, r.meta2, r.meta3);
         let status = plural(r.orders, 'nota', 'notas');
         if (hasGoal) {
           if (r.value < r.meta1) status = `faltam ${brlShort(r.meta1 - r.value)} p/ Meta 1`;
           else if (r.meta2 > 0 && r.value < r.meta2) status = `faltam ${brlShort(r.meta2 - r.value)} p/ Meta 2`;
-          else status = 'Meta 2 batida! 🎉';
+          else if (r.meta3 > 0 && r.value < r.meta3) status = `faltam ${brlShort(r.meta3 - r.value)} p/ Meta 3`;
+          else status = 'Meta 3 batida! 🎉';
         }
         return `
           <div class="regional-row">
@@ -587,6 +599,7 @@
             <div class="regional-bar">
               <div class="regional-fill ${tone}" style="width:${fill}%"></div>
               <div class="regional-marker" style="left:${r.meta1 / scale * 100}%" title="Meta 1: ${brl(r.meta1)}"></div>
+              ${r.meta2 > 0 ? `<div class="regional-marker meta2" style="left:${r.meta2 / scale * 100}%" title="Meta 2: ${brl(r.meta2)}"></div>` : ''}
             </div>` : '<div class="regional-bar empty"></div>'}
             <div class="regional-values">
               <span><b>${brl(r.value)}</b>${hasGoal ? ' de ' + brlShort(r.meta1) : ''}</span>
@@ -636,6 +649,7 @@
       const days = insights.daily;
       const todayDay = Number(insights.today.slice(8, 10));
       const meta1 = currentMeta1();
+      const meta3 = (insights.goals && insights.goals.meta3) || 0;
       const totalBusinessDays = insights.pace.businessDays || 1;
   
       let acc = 0;
@@ -645,11 +659,16 @@
         if (d.businessDay) businessCount++;
         return meta1 > 0 ? meta1 * businessCount / totalBusinessDays : null;
       });
+      businessCount = 0;
+      const pace3 = days.map(d => {
+        if (d.businessDay) businessCount++;
+        return meta3 > 0 ? meta3 * businessCount / totalBusinessDays : null;
+      });
   
       const pad = { l: 62, r: 68, t: 18, b: 28 };
       const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
       const maxBar = Math.max(...days.map(d => d.value), 1) * 1.15;
-      const maxCum = Math.max(meta1, acc, 1) * 1.05;
+      const maxCum = Math.max(meta1, meta3, acc, 1) * 1.05;
       const slot = cw / days.length;
       const xAt = (i) => pad.l + slot * i + slot / 2;
       const yBar = (v) => pad.t + ch - (Math.max(v, 0) / maxBar) * ch;
@@ -697,6 +716,17 @@
         ctx.fill();
       });
   
+      if (meta3 > 0) {
+        ctx.save();
+        ctx.setLineDash([2, 5]);
+        ctx.strokeStyle = 'rgba(251,191,36,0.95)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        pace3.forEach((v, i) => (i === 0 ? ctx.moveTo(xAt(i), yCum(v)) : ctx.lineTo(xAt(i), yCum(v))));
+        ctx.stroke();
+        ctx.restore();
+      }
+
       // Ritmo linear da Meta 1 (por dia útil)
       if (meta1 > 0) {
         ctx.save();

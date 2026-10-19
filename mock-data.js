@@ -2,18 +2,18 @@
 (function () {
   const DATA_KEY = 'dashboard_faturamento_mock_v1';
   const FILTER_KEY = 'dashboard_faturamento_filters_v1';
-  const VERSION = 2;
+  const VERSION = 3;
 
   const MONTHS_UP = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
   const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
   const HOLIDAYS = new Set(['01-01', '04-21', '05-01', '09-07', '10-12', '11-02', '11-15', '12-25']);
   const CHANNEL_WEIGHTS = [0.52, 0.21, 0.16, 0.11];
   const REGION_BASE = [
-    { name: 'Regional 1', weight: 0.42, perf: 1.06, meta1: 8000000, meta2: 8800000, ufs: ['SP', 'RJ', 'MG', 'ES'], repCount: 3 },
-    { name: 'Regional 2', weight: 0.22, perf: 0.96, meta1: 4200000, meta2: 4650000, ufs: ['PR', 'SC', 'RS'], repCount: 2 },
-    { name: 'Regional 3', weight: 0.16, perf: 0.9, meta1: 3000000, meta2: 3300000, ufs: ['BA', 'PE', 'CE', 'RN'], repCount: 2 },
-    { name: 'Regional 4', weight: 0.12, perf: 1.08, meta1: 2300000, meta2: 2550000, ufs: ['GO', 'DF', 'MT', 'MS'], repCount: 2 },
-    { name: 'Regional 5', weight: 0.08, perf: 0.94, meta1: 1500000, meta2: 1700000, ufs: ['PA', 'AM', 'RO'], repCount: 1 }
+    { name: 'Regional 1', weight: 0.42, perf: 1.06, meta1: 5250000, meta2: 6300000, meta3: 7560000, ufs: ['SP', 'RJ', 'MG', 'ES'], repCount: 3 },
+    { name: 'Regional 2', weight: 0.22, perf: 0.96, meta1: 2750000, meta2: 3300000, meta3: 3960000, ufs: ['PR', 'SC', 'RS'], repCount: 2 },
+    { name: 'Regional 3', weight: 0.16, perf: 0.9, meta1: 2000000, meta2: 2400000, meta3: 2880000, ufs: ['BA', 'PE', 'CE', 'RN'], repCount: 2 },
+    { name: 'Regional 4', weight: 0.12, perf: 1.08, meta1: 1500000, meta2: 1800000, meta3: 2160000, ufs: ['GO', 'DF', 'MT', 'MS'], repCount: 2 },
+    { name: 'Regional 5', weight: 0.08, perf: 0.94, meta1: 1000000, meta2: 1200000, meta3: 1440000, ufs: ['PA', 'AM', 'RO'], repCount: 1 }
   ];
   const UF_LABEL = {
     SP: 'São Paulo', RJ: 'Rio de Janeiro', MG: 'Minas Gerais', ES: 'Espírito Santo',
@@ -123,6 +123,7 @@
         perf: base.perf,
         meta1: base.meta1,
         meta2: base.meta2,
+        meta3: base.meta3,
         ufs: base.ufs.slice(),
         reps
       };
@@ -142,7 +143,7 @@
   function generate() {
     const now = new Date();
     const asOf = isoDate(now);
-    const company = { meta1: 19000000, meta2: 21000000 };
+    const company = { meta1: 12500000, meta2: 15000000, meta3: 18000000 };
     const catalog = makeCatalog(mulberry32((Date.now() ^ 0x9e3779b9) >>> 0));
     const orders = [];
     let seq = 80420;
@@ -234,8 +235,8 @@
       generatedAt: new Date().toISOString(),
       company,
       catalog,
-      televendas: { name: catalog.featured, meta1: 3000000, meta2: 4000000 },
-      regionals: catalog.regionals.map((r) => ({ name: r.name, meta1: r.meta1, meta2: r.meta2 })),
+      televendas: { name: catalog.featured, meta1: 2200000, meta2: 2800000, meta3: 3500000 },
+      regionals: catalog.regionals.map((r) => ({ name: r.name, meta1: r.meta1, meta2: r.meta2, meta3: r.meta3 })),
       orders
     };
   }
@@ -319,19 +320,27 @@
 
   function heroGoals(data, monthOrders, filtered, filters) {
     const open = !filters.regional && !filters.uf && !filters.rep && !filters.channel;
-    if (open) return { meta1: data.company.meta1, meta2: data.company.meta2 };
+    if (open) return { meta1: data.company.meta1, meta2: data.company.meta2, meta3: data.company.meta3 };
     const featured = data.catalog.featured;
     if (filters.channel === featured && !filters.uf && !filters.rep) {
       const allFeat = sum(monthOrders.filter((o) => o.channel === featured));
       const ratio = filters.regional ? share(sum(filtered), allFeat) : 1;
-      return { meta1: Math.round(data.televendas.meta1 * ratio), meta2: Math.round(data.televendas.meta2 * ratio) };
+      return {
+        meta1: Math.round(data.televendas.meta1 * ratio),
+        meta2: Math.round(data.televendas.meta2 * ratio),
+        meta3: Math.round(data.televendas.meta3 * ratio)
+      };
     }
     const parent = filters.regional
       ? (data.regionals.find((r) => r.name === filters.regional) || data.company)
       : data.company;
     const parentOrders = monthOrders.filter((o) => !filters.regional || o.regional === filters.regional);
     const ratio = share(sum(filtered), sum(parentOrders));
-    return { meta1: Math.round(parent.meta1 * ratio), meta2: Math.round(parent.meta2 * ratio) };
+    return {
+      meta1: Math.round(parent.meta1 * ratio),
+      meta2: Math.round(parent.meta2 * ratio),
+      meta3: Math.round((parent.meta3 || 0) * ratio)
+    };
   }
 
   function televendasSlice(data, monthOrders, filters) {
@@ -346,7 +355,8 @@
     return {
       currentValue: hidden ? 0 : sum(dim),
       meta1: Math.round(data.televendas.meta1 * ratio),
-      meta2: Math.round(data.televendas.meta2 * ratio)
+      meta2: Math.round(data.televendas.meta2 * ratio),
+      meta3: Math.round(data.televendas.meta3 * ratio)
     };
   }
 
@@ -393,6 +403,7 @@
           name: r.name,
           meta1: Math.round(r.meta1 * ratio),
           meta2: Math.round(r.meta2 * ratio),
+          meta3: Math.round((r.meta3 || 0) * ratio),
           value: g ? g.value : 0,
           orders: g ? g.orders : 0
         };
@@ -403,7 +414,7 @@
     const dailyAverage = elapsed > 0 ? net / elapsed : 0;
     return {
       today: ref,
-      goals: { meta1: goals.meta1, meta2: goals.meta2 },
+      goals: { meta1: goals.meta1, meta2: goals.meta2, meta3: goals.meta3 },
       totals: {
         today: sum(todayOrders),
         todayOrders: todayOrders.length,
@@ -447,6 +458,7 @@
       sales: {
         goal: goals.meta1,
         meta2: goals.meta2,
+        meta3: goals.meta3,
         currentValue: insights.totals.net,
         televendas: televendasSlice(data, monthOrders, filters),
         recentOrders: recentOrders.slice(0, 8)
@@ -477,13 +489,15 @@
 
   class SalesDashboard {
     constructor() {
-      this.goalValue = 19000000;
-      this.meta2Goal = 21000000;
+      this.goalValue = 12500000;
+      this.meta2Goal = 15000000;
+      this.meta3Goal = 18000000;
       this.currentValue = 0;
       this.televendasValue = 0;
-      this.televendasGoal = 3000000;
-      this.televendasMeta1 = 3000000;
-      this.televendasMeta2 = 4000000;
+      this.televendasGoal = 2200000;
+      this.televendasMeta1 = 2200000;
+      this.televendasMeta2 = 2800000;
+      this.televendasMeta3 = 3500000;
       this.ctx = null;
       this.televendasCtx = null;
       this.updateInterval = 15000;
@@ -532,11 +546,12 @@
       const tv = view.sales.televendas;
       this.televendasMeta1 = tv.meta1;
       this.televendasMeta2 = tv.meta2;
+      this.televendasMeta3 = tv.meta3;
       this.televendasGoal = tv.meta1;
       this.televendasValue = tv.currentValue;
       const title = document.getElementById('featuredChannelTitle');
       if (title) title.textContent = view.featuredChannel || 'Canal';
-      this.updateDashboard({ goal: view.sales.goal, meta2: view.sales.meta2, currentValue: view.sales.currentValue });
+      this.updateDashboard({ goal: view.sales.goal, meta2: view.sales.meta2, meta3: view.sales.meta3, currentValue: view.sales.currentValue });
       this.updateDisplayValues();
       this.updateTelevendasDisplayValues({ currentValue: tv.currentValue });
       this.updateStatus();
@@ -553,6 +568,7 @@
       this.goalValue = Number(data.goal) || 0;
       this.currentValue = Number(data.currentValue) || 0;
       this.meta2Goal = Number(data.meta2) || 0;
+      this.meta3Goal = Number(data.meta3) || 0;
       this.cachedSalesData = data;
       this.hasInitialData = true;
     }
@@ -564,6 +580,7 @@
       text('chartCurrentValue', money.format(this.currentValue));
       text('goalValue', money.format(this.goalValue));
       text('meta2GoalValue', money.format(this.meta2Goal));
+      text('meta3GoalValue', money.format(this.meta3Goal));
       text('currentValue', money.format(this.currentValue));
       text('differenceValue', money.format(diff));
     }
@@ -575,6 +592,7 @@
       text('televendasDifference', money.format(Math.abs((this.televendasMeta1 || 0) - current)));
       text('televendasMeta1Value', money.format(this.televendasMeta1 || 0));
       text('televendasMeta2Value', money.format(this.televendasMeta2 || 0));
+      text('televendasMeta3Value', money.format(this.televendasMeta3 || 0));
       const label = document.getElementById('televendasDiffLabel');
       if (label) label.textContent = current >= (this.televendasMeta1 || 0) ? 'Acima da Meta 1' : 'Faltam para a Meta 1';
     }
@@ -582,8 +600,10 @@
     updateStatus() {
       const p1 = this.goalValue > 0 ? this.currentValue / this.goalValue * 100 : 0;
       const p2 = this.meta2Goal > 0 ? this.currentValue / this.meta2Goal * 100 : 0;
+      const p3 = this.meta3Goal > 0 ? this.currentValue / this.meta3Goal * 100 : 0;
       text('statusText', this.goalValue > 0 ? nf1.format(p1) + '% da Meta' : 'Sem meta no recorte');
       text('meta2StatusText', this.meta2Goal > 0 ? (p2 >= 100 ? 'Meta 2 atingida' : nf1.format(p2) + '% da Meta 2') : 'Sem meta no recorte');
+      text('meta3StatusText', this.meta3Goal > 0 ? (p3 >= 100 ? 'Meta 3 atingida' : nf1.format(p3) + '% da Meta 3') : 'Sem meta no recorte');
     }
 
     renderOrders(list, total) {

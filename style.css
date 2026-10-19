@@ -376,6 +376,7 @@ body {
 .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .legend-dot.main { background: linear-gradient(135deg, var(--rose), var(--brand)); }
 .legend-dot.violet { background: var(--violet); }
+.legend-dot.amber { background: var(--amber); }
 .legend-dot.green { background: var(--green); }
 
 .chart-wrapper {
@@ -444,19 +445,20 @@ body {
 .televendas-diff-row { display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .televendas-difference { font-size: 0.95rem; font-weight: 700; }
 
-.televendas-metas { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.televendas-metas { margin-top: 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .televendas-meta-card { padding: 10px 12px; border-radius: 12px; background: rgba(15, 23, 42, 0.35); border: 1px solid rgba(148, 163, 184, 0.1); min-width: 0; }
 .televendas-meta-label { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; }
 .televendas-meta-value { font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .televendas-meta-value.green { color: var(--green); }
 .televendas-meta-value.purple { color: var(--violet); }
+.televendas-meta-value.gold { color: var(--amber); }
 
 /* Cards laterais */
-.info-cards { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.info-cards { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .info-card {
     flex: 1;
     min-height: 0;
-    padding: 14px 18px 14px 22px;
+    padding: 8px 14px 8px 18px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -467,6 +469,7 @@ body {
 .info-card::before { content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 3px; border-radius: 0 3px 3px 0; background: var(--faint); }
 .info-card.accent-green::before { background: var(--green); box-shadow: 0 0 14px var(--green); }
 .info-card.accent-violet::before { background: var(--violet); box-shadow: 0 0 14px var(--violet); }
+.info-card.accent-amber::before { background: var(--amber); box-shadow: 0 0 14px var(--amber); }
 .info-card.accent-white::before { background: var(--text-strong); box-shadow: 0 0 14px rgba(255, 255, 255, 0.6); }
 .info-card.accent-rose::before { background: var(--rose); box-shadow: 0 0 14px var(--rose); }
 .card-label { font-size: 0.7rem; font-weight: 650; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
@@ -474,6 +477,7 @@ body {
 .card-value.green { color: var(--green); }
 .card-value.white { color: var(--text-strong); }
 .card-value.purple { color: var(--violet); }
+.card-value.gold { color: var(--amber); }
 .card-value.red { color: var(--rose); }
 
 .status-card { flex: 0.8; align-items: center; padding-left: 18px; }
@@ -501,7 +505,9 @@ body {
 .panel-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.72rem; color: var(--muted); }
 .panel-legend span { display: flex; align-items: center; gap: 6px; }
 .legend-mark { display: inline-block; width: 2px; height: 12px; border-radius: 1px; background: #fff; }
-.legend-mark.meta2 { width: 10px; height: 10px; border-radius: 3px; background: rgba(167, 139, 250, 0.35); border: 1px solid var(--violet); }
+.legend-mark.meta2 { width: 2px; height: 12px; border-radius: 1px; background: var(--violet); border: 0; }
+.legend-mark.meta3 { width: 10px; height: 10px; border-radius: 3px; background: rgba(251, 191, 36, 0.35); border: 1px solid var(--amber); }
+.legend-swatch.pace3 { height: 0; border-top: 2px dashed var(--amber); border-radius: 0; }
 .legend-swatch { display: inline-block; width: 14px; height: 10px; border-radius: 3px; }
 .legend-swatch.bars { background: linear-gradient(180deg, rgba(56, 189, 248, 0.8), rgba(56, 189, 248, 0.2)); }
 .legend-swatch.line { height: 3px; background: var(--green); box-shadow: 0 0 6px var(--green); }
@@ -523,13 +529,16 @@ body {
 
 .tone-red { color: var(--rose); }
 .tone-amber { color: var(--amber); }
+.regional-marker.meta2 { background: var(--violet); box-shadow: 0 0 6px rgba(167, 139, 250, 0.7); }
 .tone-green { color: var(--green); }
 .tone-purple { color: var(--violet); }
+.tone-gold { color: var(--amber); }
 .tone-neutral { color: var(--muted); }
 .regional-fill.tone-red { background: linear-gradient(90deg, #e11d48, #fb7185, #f97316); box-shadow: 0 0 12px rgba(251, 113, 133, 0.35); }
 .regional-fill.tone-amber { background: linear-gradient(90deg, #d97706, #fbbf24); box-shadow: 0 0 12px rgba(251, 191, 36, 0.35); }
 .regional-fill.tone-green { background: linear-gradient(90deg, #059669, #34d399); box-shadow: 0 0 12px rgba(52, 211, 153, 0.35); }
 .regional-fill.tone-purple { background: linear-gradient(90deg, #7c3aed, #a78bfa); box-shadow: 0 0 12px rgba(167, 139, 250, 0.35); }
+.regional-fill.tone-gold { background: linear-gradient(90deg, #d97706, #fbbf24); box-shadow: 0 0 12px rgba(251, 191, 36, 0.35); }
 .regional-fill.tone-neutral { background: linear-gradient(90deg, #0284c7, #38bdf8); }
 
 .daily-chart-wrap { flex: 1; min-height: 0; position: relative; }
